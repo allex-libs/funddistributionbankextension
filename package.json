@@ -1,0 +1,27 @@
+{
+  "name": "allex_funddistributionbankextensionlib",
+  "version": "1.0.0",
+  "description": "Extension of the allex_leveldbbanklib that allows for fund distribution",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab.hers.rs:allex_libs/funddistributionbankextension.git"
+  },
+  "keywords": [
+    "ecosystem:AllexJS",
+    "fund",
+    "distribution",
+    "bank",
+    "extension",
+    "lib"
+  ],
+  "author": "HERS Belgrade",
+  "license": "ISC",
+  "devDependencies": {
+    "chai": "3.x",
+    "chai-as-promised": "6.x"
+  }
+}
