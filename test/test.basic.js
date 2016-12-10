@@ -96,6 +96,11 @@ function onBankLib (banklib) {
     //console.log('my fundstatus', this.fundstatus, '+', dist, '=>', est);
     fs = null;
     this.checksum = estobj.sum;
+    if (!estobj.fs.hasOwnProperty(this.accumulationfundname) &&
+      this.fundstatus.hasOwnProperty(this.accumulationfundname)
+    ) {
+      estobj.fs[this.accumulationfundname] = this.fundstatus[this.accumulationfundname];
+    }
     return q(estobj.fs);
   };
   TestBank.prototype.onAccumulationForEstimate = function (amount, accamount) {
