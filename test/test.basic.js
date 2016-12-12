@@ -159,6 +159,7 @@ function itemprinter (item) {
 
 describe ('Basic tests', function () {
   it('Load libraries', function () {
+    this.timeout(100000);
     return execlib.loadDependencies('client', ['allex:leveldbbank:lib'], onBankLib);
   });
   /*

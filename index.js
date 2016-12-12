@@ -10,7 +10,9 @@ function createExtension (execlib) {
     this.distribution = null;
     this.percentagepower = null;
     this.minpercentage = null;
-    this.setDistribution(prophash.funddistribution);
+    if (prophash.funddistribution) {
+      this.setDistribution(prophash.funddistribution);
+    }
   }
   FundDistributionExtension.prototype.destroy = function () {
     this.minpercentage = null;
