@@ -11,7 +11,7 @@ function createExtension (execlib) {
     this.percentagepower = null;
     this.minpercentage = null;
     if (prophash.funddistribution) {
-      this.setDistribution(prophash.funddistribution);
+      this.setDistribution(prophash.funddistribution, prophash.initdistributionrefererencearray);
     }
   }
   FundDistributionExtension.prototype.destroy = function () {
@@ -20,7 +20,7 @@ function createExtension (execlib) {
     this.distribution = null;
     this.accumulationfundname = null;
   };
-  FundDistributionExtension.prototype.setDistribution = function (distributionhash) {
+  FundDistributionExtension.prototype.setDistribution = function (distributionhash, referencearry) {
     var dist = [], minperc = Infinity;
     if (!distributionhash) {
       this.destroy();
@@ -29,6 +29,9 @@ function createExtension (execlib) {
     if (!(distributionhash.funds && Object.keys(distributionhash.funds).length>0)) {
       this.destroy();
       throw new lib.Error('NO_DISTRIBUTION', 'Distribution of the property hash has to be an object');
+    }
+    if (!lib.isArray(referencearry)) {
+      throw new lib.Error('NO_REFERENCE_ARRAY', 'Reference array is needed to set the distribution');
     }
     this.percentagepower = Math.pow(10, distributionhash.percentagedecimals || 0);
     lib.traverseShallow(distributionhash.funds, function (perc, name) {
@@ -41,24 +44,28 @@ function createExtension (execlib) {
     this.minpercentage = minperc;
     dist = null;
     minperc = null;
+    return this.distribute(0, referencearry);
   };
-  FundDistributionExtension.prototype.distribute = function (amount, referencearray) {
+  FundDistributionExtension.prototype.distribute = function (amount, referencearry) {
+    if (!this.distribution) {
+      return q.reject(new lib.Error('NO_DISTRIBUTION', 'Distribution has not been set yet'));
+    }
     return this.calculateDistribution(amount).then(
-      this.chargeDistribution.bind(this, referencearray)
+      this.chargeDistribution.bind(this, referencearry)
     );
   };
-  FundDistributionExtension.prototype.chargeDistribution = function (referencearray, dist) {
-    return this.locks.run('distribute', this.distributionJob(referencearray, dist)).then(
+  FundDistributionExtension.prototype.chargeDistribution = function (referencearry, dist) {
+    return this.locks.run('distribute', this.distributionJob(referencearry, dist)).then(
       this.consolidateDistributionCharge.bind(this)
     );
   };
-  FundDistributionExtension.prototype.distributionJob = function (referencearray, dist) {
+  FundDistributionExtension.prototype.distributionJob = function (referencearry, dist) {
     var t = this,
       ret = new qlib.PromiseExecutionMapperJob(dist.map(function (charge){
-        return t.charge.bind(t, charge.name, charge.charge, referencearray);
+        return t.charge.bind(t, charge.name, charge.charge, referencearry);
     }));
     t = null;
-    referencearray = null;
+    referencearry = null;
     return ret;
   };
   FundDistributionExtension.prototype.consolidateDistributionCharge = function (chargearry) {
@@ -113,7 +120,7 @@ function createExtension (execlib) {
     if (percentage <= 0) {
       return 0;
     }
-    ret = Math.floor(percentage*amount*this.percentagepower/100);
+    ret = percentage*Math.floor(amount/this.percentagepower/100);
     //console.log('this.percentagepower', this.percentagepower, 'distributes', amount, 'with', percentage, '=>', ret);
     return ret;
   };

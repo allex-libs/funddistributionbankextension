@@ -140,6 +140,24 @@ function onBankLib (banklib) {
       return q.reject(e);
     }
   };
+  TestBank.prototype.withdrawAccumulation = function () {
+    return this.readAccountSafe(this.accumulationfundname, 0).then(
+      this.onAccumulationForWithdraw.bind(this)
+    );
+  };
+  TestBank.prototype.onAccumulationForWithdraw = function (accamount) {
+    if (!accamount) {
+      return q(true);
+    }
+    console.log('Withdrawing', this.accumulationfundname, accamount);
+    return this.charge(this.accumulationfundname, accamount, ['withdraw']).then(
+      (result) => {
+        this.fundstatus[this.accumulationfundname] -= accamount;
+        this.checksum -= accamount;
+        return q(result);
+      }
+    );
+  };
   DistributedBank = TestBank;
   return q(TestBank);
 }
@@ -188,18 +206,29 @@ describe ('Basic tests', function () {
           'jp3': 16,
           'jp4': 8
         }
-      }
+      },
+      initdistributionrefererencearray: ['ctor']
     });
     return d.promise;
   });
-  it('distribution math', function () {
+  it('distribution math for a small amount', function () {
     var ret = dbank.distributeAmount(20);
     return expect(ret).to.deep.equal([
-      {name: 'jp1', charge: -6},
-      {name: 'jp2', charge: -8},
-      {name: 'jp3', charge: -3},
-      {name: 'jp4', charge: -1},
-      {name: 'accumulation', charge: -2}
+      {name: 'jp1', charge: -0},
+      {name: 'jp2', charge: -0},
+      {name: 'jp3', charge: -0},
+      {name: 'jp4', charge: -0},
+      {name: 'accumulation', charge: -20}
+    ]);
+  });
+  it('distribution math for a distributable amount', function () {
+    var ret = dbank.distributeAmount(200);
+    return expect(ret).to.deep.equal([
+      {name: 'jp1', charge: -64},
+      {name: 'jp2', charge: -88},
+      {name: 'jp3', charge: -32},
+      {name: 'jp4', charge: -16},
+      {name: 'accumulation', charge: 0}
     ]);
   });
   it('initial distribute', function () {
@@ -224,6 +253,35 @@ describe ('Basic tests', function () {
     console.log(dbank.initchecksum, dbank.checksum);
     //expect(dbank.checksum-dbank.initchecksum).to.equal(144);
     expect(dbank.checksum-dbank.initchecksum).to.equal(10000000144);
+  });
+  it('Test distribution alteration', function () {
+    var p = dbank.withdrawAccumulation().then(
+      qlib.executor(dbank.setDistribution.bind(dbank, {
+        percentagedecimals: 2,
+        funds: {
+          'jp1': 3200,
+          'jp2': 4400,
+          'jp3': 1600,
+          'jp4': 800
+        }
+      }, ['resetDist to 2 decimals']))
+    ).then(
+      qlib.executor(dbank.estimateAndDistribute.bind(dbank, 100, 'should not distribute'))
+    ).then(
+      qlib.executor(dbank.setDistribution.bind(dbank, {
+        percentagedecimals: 0,
+        funds: {
+          'jp1': 32,
+          'jp2': 44,
+          'jp3': 16,
+          'jp4': 8
+        }
+      }, ['resetDist to 0 decimals']))
+    ).then(
+      qlib.executor(dbank.readAccountSafe.bind(dbank, dbank.accumulationfundname))
+    );
+    expect(p).to.eventually.equal(0);
+    return p;
   });
   /*
   it('distribute 20', function () {
