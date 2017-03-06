@@ -4,7 +4,7 @@
   "description": "Extension of the allex_leveldbbanklib that allows for fund distribution",
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
+    "test": "allex-mocha"
   },
   "repository": {
     "type": "git",
@@ -19,9 +19,5 @@
     "lib"
   ],
   "author": "HERS Belgrade",
-  "license": "ISC",
-  "devDependencies": {
-    "chai": "3.x",
-    "chai-as-promised": "6.x"
-  }
+  "license": "ISC"
 }

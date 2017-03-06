@@ -36,10 +36,13 @@ function createExtension (execlib) {
     this.percentagepower = Math.pow(10, distributionhash.percentagedecimals || 0);
     lib.traverseShallow(distributionhash.funds, function (perc, name) {
       dist.push({name: name, perc: perc});
-      if (perc<minperc) {
+      if (perc && perc<minperc) {
         minperc = perc;
       }
     });
+    if (minperc === Infinity) {
+      minperc = 0;
+    }
     this.distribution = dist;
     this.minpercentage = minperc;
     dist = null;
@@ -69,18 +72,19 @@ function createExtension (execlib) {
     return ret;
   };
   FundDistributionExtension.prototype.consolidateDistributionCharge = function (chargearry) {
-    var ret = {};
+    var ret = {}, _r = ret;
     //console.log('consolidateDistributionCharge', chargearry);
     if (!(lib.isArray(chargearry) && chargearry.length>0)) {
       return q(ret);
     }
     if (chargearry.length>1) {
       this.distribution.forEach(function(distdesc, distindex) {
-        ret[distdesc.name] = chargearry[distindex][1];
+        _r[distdesc.name] = chargearry[distindex][1];
       });
     }
     ret[this.accumulationfundname] = chargearry[chargearry.length-1][1];
     chargearry = null;
+    _r = null;
     return q(ret);
   };
   FundDistributionExtension.prototype.calculateDistribution = function (amount) {
@@ -102,7 +106,7 @@ function createExtension (execlib) {
     accdelta = -dist.sum-amount+(accamount||0);
     //console.log('accdelta', accdelta, 'from', dist, 'because', amount);
     dist.distribution.push({name: this.accumulationfundname, charge: accdelta});
-    console.log(amount, '=>', dist.distribution);
+    //console.log(amount, '=>', dist.distribution);
     return dist.distribution;
   };
 
