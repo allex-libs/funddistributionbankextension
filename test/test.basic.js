@@ -178,7 +178,7 @@ function itemprinter (item) {
 describe ('Basic tests', function () {
   it('Load libraries', function () {
     this.timeout(100000);
-    return execlib.loadDependencies('client', ['allex:leveldbbank:lib'], onBankLib);
+    return execlib.loadDependencies('client', ['allex_leveldbbanklib'], onBankLib);
   });
   /*
   it('Instantiating a DistributedBank without a path should throw', function () {
