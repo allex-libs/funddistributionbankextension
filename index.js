@@ -10,8 +10,8 @@ function createExtension (execlib) {
     this.distribution = null;
     this.percentagepower = null;
     this.minpercentage = null;
-    if (prophash.funddistribution) {
-      this.setDistribution(prophash.funddistribution, prophash.initdistributionrefererencearray);
+    if (prophash.funddistribution && prophash.starteddefer) {
+      prophash.starteddefer.promise.then(this.setDistribution.bind(this, prophash.funddistribution, prophash.initdistributionreferencearray));
     }
   }
   FundDistributionExtension.prototype.destroy = function () {
@@ -124,7 +124,7 @@ function createExtension (execlib) {
     if (percentage <= 0) {
       return 0;
     }
-    ret = percentage*Math.floor(amount/this.percentagepower/100);
+    ret = Math.floor(percentage*amount/this.percentagepower/100);
     //console.log('this.percentagepower', this.percentagepower, 'distributes', amount, 'with', percentage, '=>', ret);
     return ret;
   };

@@ -207,18 +207,18 @@ describe ('Basic tests', function () {
           'jp4': 8
         }
       },
-      initdistributionrefererencearray: ['ctor']
+      initdistributionreferencearray: ['ctor']
     });
     return d.promise;
   });
   it('distribution math for a small amount', function () {
-    var ret = dbank.distributeAmount(20);
+    var ret = dbank.distributeAmount(2);
     return expect(ret).to.deep.equal([
       {name: 'jp1', charge: -0},
       {name: 'jp2', charge: -0},
       {name: 'jp3', charge: -0},
       {name: 'jp4', charge: -0},
-      {name: 'accumulation', charge: -20}
+      {name: 'accumulation', charge: -2}
     ]);
   });
   it('distribution math for a distributable amount', function () {
